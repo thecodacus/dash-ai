@@ -14,6 +14,8 @@ import { saveAs } from 'file-saver';
 import { Octokit, type RestEndpointMethodTypes } from '@octokit/rest';
 import * as nodePath from 'node:path';
 import { extractRelativePath } from '~/utils/diff';
+import { ActionStore } from './actions';
+import type { WebContainer } from '@webcontainer/api';
 
 export interface ArtifactState {
   id: string;
@@ -33,6 +35,7 @@ export class WorkbenchStore {
   #filesStore = new FilesStore(webcontainer);
   #editorStore = new EditorStore(this.#filesStore);
   #terminalStore = new TerminalStore(webcontainer);
+  #actionStore = new ActionStore(webcontainer);
 
   artifacts: Artifacts = import.meta.hot?.data.artifacts ?? map({});
 
@@ -314,7 +317,18 @@ export class WorkbenchStore {
         await artifact.runner.runAction(data);
         this.resetAllFileModifications();
       }
-    } else {
+    } 
+    else if (data.action.type === 'custom') {
+      const action = this.#actionStore.actions.get()[data.action.actionKey];
+      if (!action) {
+        return;
+      }
+      data.action.execute=async (content:string)=>{
+        return action(webcontainer, content);
+      }
+      await artifact.runner.runAction(data);
+    }
+    else {
       await artifact.runner.runAction(data);
     }
   }
@@ -490,6 +504,10 @@ export class WorkbenchStore {
     } catch (error) {
       console.error('Error pushing to GitHub:', error instanceof Error ? error.message : String(error));
     }
+  }
+
+  async registerCustomAction(key: string, action: (container: Promise<WebContainer>, data: string) => Promise<void>) {
+    this.#actionStore.registerAction(key, action);
   }
 }
 

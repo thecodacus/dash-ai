@@ -1,4 +1,4 @@
-export type ActionType = 'file' | 'shell';
+export type ActionType = 'file' | 'shell' |'start' |'custom';
 
 export interface BaseAction {
   content: string;
@@ -17,6 +17,13 @@ export interface StartAction extends BaseAction {
   type: 'start';
 }
 
-export type BoltAction = FileAction | ShellAction | StartAction;
+export interface CustomAction extends BaseAction {
+  type: 'custom';
+  name: string;
+  actionKey: string;
+  execute?: (content: string) => Promise<void>;
+}
+
+export type BoltAction = FileAction | ShellAction | StartAction | CustomAction;
 
 export type BoltActionData = BoltAction | BaseAction;

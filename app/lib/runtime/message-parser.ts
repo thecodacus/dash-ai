@@ -1,4 +1,4 @@
-import type { ActionType, BoltAction, BoltActionData, FileAction, ShellAction } from '~/types/actions';
+import type { ActionType, BoltAction, BoltActionData, CustomAction, FileAction, ShellAction, StartAction } from '~/types/actions';
 import type { BoltArtifactData } from '~/types/artifact';
 import { createScopedLogger } from '~/utils/logger';
 import { unreachable } from '~/utils/unreachable';
@@ -272,11 +272,21 @@ export class StreamingMessageParser {
       }
 
       (actionAttributes as FileAction).filePath = filePath;
-    } else if (!['shell', 'start'].includes(actionType)) {
+    } 
+    else if (actionType === 'custom') {
+      const actionKey = this.#extractAttribute(actionTag, 'actionKey') as string;
+      const name = this.#extractAttribute(actionTag, 'name') as string;
+      if (!actionKey) {
+        logger.debug('Action key not specified');
+      }
+      (actionAttributes as CustomAction).actionKey = actionKey;
+      (actionAttributes as CustomAction).name = name;
+    }
+    else if (!['shell', 'start'].includes(actionType)) {
       logger.warn(`Unknown action type '${actionType}'`);
     }
 
-    return actionAttributes as FileAction | ShellAction;
+    return actionAttributes as FileAction | ShellAction | StartAction | CustomAction;
   }
 
   #extractAttribute(tag: string, attributeName: string): string | undefined {

@@ -132,6 +132,10 @@ export class ActionRunner {
 
           return;
         }
+        case 'custom': {
+          await this.#runCustomAction(action);
+          break;
+        }
       }
 
       this.#updateAction(actionId, {
@@ -219,6 +223,13 @@ export class ActionRunner {
     } catch (error) {
       logger.error('Failed to write file\n\n', error);
     }
+  }
+
+  async #runCustomAction(action: ActionState) {
+    if (action.type !== 'custom') {
+      unreachable('Expected custom action');
+    }
+    await action.execute?.(action.content);
   }
   #updateAction(id: string, newState: ActionStateUpdate) {
     const actions = this.actions.get();
