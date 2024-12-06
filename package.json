@@ -5,9 +5,12 @@
   "license": "MIT",
   "sideEffects": false,
   "type": "module",
+  "main": "dist/electron/main.js",
   "scripts": {
     "deploy": "npm run build && wrangler pages deploy",
     "build": "remix vite:build",
+    "dev:app": "concurrently \"pnpm run dev\" \"pnpm run dev:electron\"",
+    "dev:electron": "tsc -p electron/tsconfig.json -w & cross-env IS_DEV=true electron .",
     "dev": "remix vite:dev",
     "test": "vitest --run",
     "test:watch": "vitest",
@@ -23,7 +26,8 @@
     "typecheck": "tsc",
     "typegen": "wrangler types",
     "preview": "pnpm run build && pnpm run start",
-    "prepare": "husky"
+    "prepare": "husky",
+    "package": "npm run build && electron-builder build --win --mac --linux"
   },
   "engines": {
     "node": ">=18.18.0"
@@ -106,6 +110,10 @@
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
     "fast-glob": "^3.3.2",
     "husky": "9.1.7",
     "is-ci": "^3.0.1",
@@ -120,11 +128,24 @@
     "vite-plugin-optimize-css-modules": "^1.1.0",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^2.1.7",
+    "wait-on": "^8.0.1",
     "wrangler": "^3.91.0",
     "zod": "^3.23.8"
   },
   "resolutions": {
     "@typescript-eslint/utils": "^8.0.0-alpha.30"
   },
-  "packageManager": "pnpm@9.4.0"
+  "packageManager": "pnpm@9.4.0",
+  "build": {
+    "appId": "com.ottodev.bolt.app",
+    "files": [
+      "build/**/*",
+      "dist/**/*",
+      "public/**/*"
+    ],
+    "directories": {
+      "buildResources": "resources",
+      "output": "release"
+    }
+  }
 }
