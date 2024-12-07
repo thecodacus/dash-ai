@@ -29,9 +29,9 @@ function parseCookies(cookieHeader: string) {
 }
 
 async function chatAction({ context, request }: ActionFunctionArgs) {
-  const { messages } = await request.json<{
+  const { messages, files } = await request.json<{
     messages: Messages;
-    model: string;
+    files: any;
   }>();
 
   const cookieHeader = request.headers.get('Cookie');
@@ -40,6 +40,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
   const apiKeys = JSON.parse(parseCookies(cookieHeader || '').apiKeys || '{}');
 
   const stream = new SwitchableStream();
+  console.log({ files });
 
   try {
     const options: StreamingOptions = {
@@ -60,13 +61,13 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
         messages.push({ role: 'assistant', content });
         messages.push({ role: 'user', content: CONTINUE_PROMPT });
 
-        const result = await streamText(messages, context.cloudflare.env, options, apiKeys);
+        const result = await streamText(messages, context.cloudflare.env, options, apiKeys, files);
 
         return stream.switchSource(result.toAIStream());
       },
     };
 
-    const result = await streamText(messages, context.cloudflare.env, options, apiKeys);
+    const result = await streamText(messages, context.cloudflare.env, options, apiKeys, files);
 
     stream.switchSource(result.toAIStream());
 

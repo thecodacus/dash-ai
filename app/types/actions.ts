@@ -7,6 +7,7 @@ export interface BaseAction {
 export interface FileAction extends BaseAction {
   type: 'file';
   filePath: string;
+  format?: 'diff' | 'new';
 }
 
 export interface ShellAction extends BaseAction {

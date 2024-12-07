@@ -261,9 +261,9 @@ export class WorkbenchStore {
     this.artifacts.setKey(messageId, { ...artifact, ...state });
   }
   addAction(data: ActionCallbackData) {
-    this._addAction(data);
+    // this._addAction(data);
 
-    // this.addToExecutionQueue(()=>this._addAction(data))
+    this.addToExecutionQueue(() => this._addAction(data));
   }
   async _addAction(data: ActionCallbackData) {
     const { messageId } = data;
@@ -295,6 +295,12 @@ export class WorkbenchStore {
 
     if (data.action.type === 'file') {
       const wc = await webcontainer;
+      const actions = artifact.runner.actions.get();
+
+      if (actions[data.actionId].executed) {
+        return;
+      }
+
       const fullPath = nodePath.join(wc.workdir, data.action.filePath);
 
       if (this.selectedFile.value !== fullPath) {
@@ -305,17 +311,23 @@ export class WorkbenchStore {
         this.currentView.set('code');
       }
 
-      const doc = this.#editorStore.documents.get()[fullPath];
+      if (data.action.format !== 'diff') {
+        const doc = this.#editorStore.documents.get()[fullPath];
 
-      if (!doc) {
-        await artifact.runner.runAction(data, isStreaming);
+        if (!doc) {
+          await artifact.runner.runAction(data, isStreaming);
+        }
+
+        this.#editorStore.updateFile(fullPath, data.action.content);
       }
-
-      this.#editorStore.updateFile(fullPath, data.action.content);
 
       if (!isStreaming) {
         await artifact.runner.runAction(data);
+
+        // if (data.action.format !== 'diff'){
         this.resetAllFileModifications();
+
+        // }
       }
     } else {
       await artifact.runner.runAction(data);

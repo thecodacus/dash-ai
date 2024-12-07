@@ -6,6 +6,7 @@ import { createScopedLogger } from '~/utils/logger';
 import { unreachable } from '~/utils/unreachable';
 import type { ActionCallbackData } from './message-parser';
 import type { BoltShell } from '~/utils/shell';
+import { DiffParser } from '~/utils/outputDiffParser';
 
 const logger = createScopedLogger('ActionRunner');
 
@@ -203,25 +204,46 @@ export class ActionRunner {
 
     const webcontainer = await this.#webcontainer;
 
-    let folder = nodePath.dirname(action.filePath);
-
-    // remove trailing slashes
-    folder = folder.replace(/\/+$/g, '');
-
-    if (folder !== '.') {
+    if (action.format == 'diff') {
       try {
-        await webcontainer.fs.mkdir(folder, { recursive: true });
-        logger.debug('Created folder', folder);
-      } catch (error) {
-        logger.error('Failed to create folder\n\n', error);
-      }
-    }
+        const editBlocks = DiffParser.parseDiffFormat(action.content);
 
-    try {
-      await webcontainer.fs.writeFile(action.filePath, action.content);
-      logger.debug(`File written ${action.filePath}`);
-    } catch (error) {
-      logger.error('Failed to write file\n\n', error);
+        // Validate edits before applying
+        const validation = DiffParser.validateEdits(editBlocks);
+
+        if (!validation.valid) {
+          logger.error('Invalid Diffs\n\n', validation.errors);
+          return;
+        }
+
+        const originalCode = await webcontainer.fs.readFile(action.filePath, 'utf-8');
+        const newCode = DiffParser.applyEdits(originalCode, editBlocks);
+        await webcontainer.fs.writeFile(action.filePath, newCode);
+        logger.debug(`File Edited ${action.filePath}`);
+      } catch (error: any) {
+        logger.debug(`Error On File Edit ${action.filePath}: ${error.message}`);
+      }
+    } else {
+      let folder = nodePath.dirname(action.filePath);
+
+      // remove trailing slashes
+      folder = folder.replace(/\/+$/g, '');
+
+      if (folder !== '.') {
+        try {
+          await webcontainer.fs.mkdir(folder, { recursive: true });
+          logger.debug('Created folder', folder);
+        } catch (error) {
+          logger.error('Failed to create folder\n\n', error);
+        }
+      }
+
+      try {
+        await webcontainer.fs.writeFile(action.filePath, action.content);
+        logger.debug(`File written ${action.filePath}`);
+      } catch (error) {
+        logger.error('Failed to write file\n\n', error);
+      }
     }
   }
   #updateAction(id: string, newState: ActionStateUpdate) {
