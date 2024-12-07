@@ -129,7 +129,7 @@ function createFilesContext(files: FileMap) {
       return `<file path="${path}">\n${codeWithLinesNumbers}\n</file>`;
     });
 
-  return `Below are the code files present in the webcontainer:\n\n<codebase>${fileContexts.join('\n\n')}\n\n</codebase>`;
+  return `Below are the code files present in the webcontainer:\ncode format:\n<line number>|<line content>\n <codebase>${fileContexts.join('\n\n')}\n\n</codebase>`;
 }
 
 export async function streamText(
