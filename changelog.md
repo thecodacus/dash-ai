@@ -1,4 +1,4 @@
-# Release v0.0.2
+# Release v0.0.3
 
 ### 🎉 First Release
 
@@ -201,6 +201,8 @@
 - update commit hash to c75b984442d7206d11a8c0872b9995fbd171bbeb
 - update commit hash to e7ada4d26c2d1a90f034e575ee50671f0d141a16
 - bump version to 0.0.1
+- update commit hash to 499795b0e6494138dc3ab1dff9c66d48655d631d
+- bump version to 0.0.2
 
 
 #### 🔍 Other Changes
@@ -797,5 +799,7 @@
 - fix check
 - Merge remote-tracking branch 'origin/HEAD'
 - fix check
+- Merge remote-tracking branch 'origin/HEAD'
+- fix
 
 
