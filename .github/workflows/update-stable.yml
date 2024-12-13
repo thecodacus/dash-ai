@@ -1,6 +1,9 @@
 name: Update Stable Branch
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     types: [closed]
     branches:
@@ -8,14 +11,17 @@ on:
 
 jobs:
   update-stable:
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'stable-release')
+    #if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'stable-release')
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: read
     
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Configure Git
         run: |
@@ -158,7 +164,7 @@ jobs:
 
       - name: Commit Version Update
         run: |
-          git add package.json pnpm-lock.yaml
+          git add package.json pnpm-lock.yaml changelog.md
           git commit -m "chore: bump version to ${{ steps.bump_version.outputs.new_version }}"
           git push main
 
