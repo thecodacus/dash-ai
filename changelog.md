@@ -1,4 +1,4 @@
-# Release v0.0.1
+# Release v0.0.2
 
 ### 🎉 First Release
 
@@ -199,6 +199,8 @@
 - fix workflow permission
 - update commit hash to 885d762836cd0003b98c3b8a0a1efc3485dce655
 - update commit hash to c75b984442d7206d11a8c0872b9995fbd171bbeb
+- update commit hash to e7ada4d26c2d1a90f034e575ee50671f0d141a16
+- bump version to 0.0.1
 
 
 #### 🔍 Other Changes
@@ -790,6 +792,8 @@
 - fix check
 - fix check
 - Merge branch 'workflow-fix'
+- fix check
+- Merge remote-tracking branch 'origin/HEAD'
 - fix check
 - Merge remote-tracking branch 'origin/HEAD'
 - fix check
