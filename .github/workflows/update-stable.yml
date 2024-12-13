@@ -166,14 +166,14 @@ jobs:
         run: |
           git add package.json pnpm-lock.yaml changelog.md
           git commit -m "chore: bump version to ${{ steps.bump_version.outputs.new_version }}"
-          git push main
+          git push
 
       - name: Update Stable Branch
         run: |
           # Ensure stable branch exists
           git checkout stable 2>/dev/null || git checkout -b stable
           git merge main --no-ff -m "chore: merge main into stable for version ${{ steps.bump_version.outputs.new_version }}"
-          git push stable
+          git push
 
       - name: Create and Push Tag
         run: |
