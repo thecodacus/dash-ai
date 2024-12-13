@@ -174,7 +174,7 @@ jobs:
           # Ensure stable branch exists
           git checkout stable 2>/dev/null || git checkout -b stable
           git merge main --no-ff -m "chore: merge main into stable for version ${{ steps.bump_version.outputs.new_version }}"
-          git push
+          git push --set-upstream origin stable
 
       - name: Create and Push Tag
         run: |
