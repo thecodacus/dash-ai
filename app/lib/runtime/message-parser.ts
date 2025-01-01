@@ -64,6 +64,13 @@ function cleanoutMarkdownSyntax(content: string) {
     return content;
   }
 }
+
+function cleanEscapedSequencesInFiles(input: string) {
+  input = input.split('&lt;').join('<');
+  input = input.split('&gt;').join('>');
+
+  return input;
+}
 export class StreamingMessageParser {
   #messages = new Map<string, MessageState>();
 
@@ -112,6 +119,8 @@ export class StreamingMessageParser {
                 content = cleanoutMarkdownSyntax(content);
               }
 
+              content = cleanEscapedSequencesInFiles(content);
+
               content += '\n';
             }
 
@@ -142,6 +151,8 @@ export class StreamingMessageParser {
               if (!currentAction.filePath.endsWith('.md')) {
                 content = cleanoutMarkdownSyntax(content);
               }
+
+              content = cleanEscapedSequencesInFiles(content);
 
               this._options.callbacks?.onActionStream?.({
                 artifactId: currentArtifact.id,

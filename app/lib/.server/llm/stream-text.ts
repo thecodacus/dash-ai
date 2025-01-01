@@ -55,7 +55,7 @@ export function simplifyBoltActions(input: string): string {
 
   // Replace each matching occurrence
   return input.replace(regex, (_0, openingTag, _2, closingTag) => {
-    return `${openingTag}{{file content redacted, see the system prompt for file content}}${closingTag}`;
+    return `// file content redacted, see the system prompt for file content\n${openingTag}${closingTag}`;
   });
 }
 
@@ -97,6 +97,10 @@ function createFilesContext(files: FileMap) {
       }
 
       const codeWithLinesNumbers = dirent.content;
+
+      if (path.startsWith(`${WORK_DIR}/`)) {
+        path = path.replace(`${WORK_DIR}/`, '');
+      }
 
       /*
        * .split('\n')
