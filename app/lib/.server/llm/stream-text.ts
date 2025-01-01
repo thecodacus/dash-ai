@@ -55,7 +55,7 @@ export function simplifyBoltActions(input: string): string {
 
   // Replace each matching occurrence
   return input.replace(regex, (_0, openingTag, _2, closingTag) => {
-    return `${openingTag}\n          ...\n        ${closingTag}`;
+    return `${openingTag}{{file content redacted, see the system prompt for file content}}${closingTag}`;
   });
 }
 
@@ -96,15 +96,27 @@ function createFilesContext(files: FileMap) {
         return '';
       }
 
-      const codeWithLinesNumbers = dirent.content
-        .split('\n')
-        .map((v, i) => `${i + 1}|${v}`)
-        .join('\n');
+      const codeWithLinesNumbers = dirent.content;
 
-      return `<file path="${path}">\n${codeWithLinesNumbers}\n</file>`;
+      /*
+       * .split('\n')
+       * .map((v, i) => `${i + 1}|${v}`)
+       * .join('\n');
+       */
+
+      return `<boltAction type="file" filePath="${path}">\n${codeWithLinesNumbers}\n</boltAction>`;
     });
 
-  return `Below are the code files present in the webcontainer:\ncode format:\n<line number>|<line content>\n <codebase>${fileContexts.join('\n\n')}\n\n</codebase>`;
+  return `
+  ================================================================================
+  PROJECT CODE CONTEXT
+  ================================================================================
+  Below are the code files present in the webcontainer:
+
+<boltArtifact id="codebase" title="Project Codebase" >${fileContexts.join('\n\n')}\n\n</boltArtifact>
+
+  ================================================================================
+`;
 }
 
 function extractPropertiesFromMessage(message: Message): { model: string; provider: string; content: string } {
