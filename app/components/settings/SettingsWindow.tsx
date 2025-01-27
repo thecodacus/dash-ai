@@ -1,6 +1,6 @@
 import * as RadixDialog from '@radix-ui/react-dialog';
 import { motion } from 'framer-motion';
-import { useState, type ReactElement } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import { classNames } from '~/utils/classNames';
 import { DialogTitle, dialogVariants, dialogBackdropVariants } from '~/components/ui/Dialog';
 import { IconButton } from '~/components/ui/IconButton';
@@ -12,6 +12,8 @@ import DebugTab from './debug/DebugTab';
 import EventLogsTab from './event-logs/EventLogsTab';
 import ConnectionsTab from './connections/ConnectionsTab';
 import DataTab from './data/DataTab';
+import { PluginManager } from '~/lib/modules/plugin/manager';
+import type { PluginManifest } from '~/lib/modules/plugin/types';
 
 interface SettingsProps {
   open: boolean;
@@ -23,6 +25,13 @@ type TabType = 'data' | 'providers' | 'features' | 'debug' | 'event-logs' | 'con
 export const SettingsWindow = ({ open, onClose }: SettingsProps) => {
   const { debug, eventLogs } = useSettings();
   const [activeTab, setActiveTab] = useState<TabType>('data');
+  const [pluginTabs, setPluginTabs] = useState<{ manifest: PluginManifest; component: ReactElement }[]>([]);
+
+  useEffect(() => {
+    PluginManager.getInstance().registerSlot('settings-tab', (manifest: PluginManifest, component: ReactElement) => {
+      setPluginTabs((prev) => [...prev, { manifest, component }]);
+    });
+  }, []);
 
   const tabs: { id: TabType; label: string; icon: string; component?: ReactElement }[] = [
     { id: 'data', label: 'Data', icon: 'i-ph:database', component: <DataTab /> },
@@ -49,6 +58,15 @@ export const SettingsWindow = ({ open, onClose }: SettingsProps) => {
           },
         ]
       : []),
+  ];
+  const allTabs = [
+    ...tabs,
+    ...pluginTabs.map(({ manifest, component }) => ({
+      id: manifest.id as TabType,
+      label: manifest.id,
+      icon: 'i-ph:puzzle-piece',
+      component,
+    })),
   ];
 
   return (
@@ -81,7 +99,7 @@ export const SettingsWindow = ({ open, onClose }: SettingsProps) => {
                 <DialogTitle className="flex-shrink-0 text-lg font-semibold text-bolt-elements-textPrimary mb-2">
                   Settings
                 </DialogTitle>
-                {tabs.map((tab) => (
+                {allTabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
@@ -114,7 +132,7 @@ export const SettingsWindow = ({ open, onClose }: SettingsProps) => {
               </div>
 
               <div className="flex-1 flex flex-col p-8 pt-10 bg-bolt-elements-background-depth-2">
-                <div className="flex-1 overflow-y-auto">{tabs.find((tab) => tab.id === activeTab)?.component}</div>
+                <div className="flex-1 overflow-y-auto">{allTabs.find((tab) => tab.id === activeTab)?.component}</div>
               </div>
             </div>
             <RadixDialog.Close asChild onClick={onClose}>
