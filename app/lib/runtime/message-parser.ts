@@ -114,7 +114,10 @@ export class StreamingMessageParser {
               // Remove markdown code block syntax if present and file is not markdown
               if (!currentAction.filePath.endsWith('.md')) {
                 content = cleanoutMarkdownSyntax(content);
-                content = cleanEscapedTags(content);
+
+                if (!content.includes('</')) {
+                  content = cleanEscapedTags(content);
+                }
               }
 
               content += '\n';

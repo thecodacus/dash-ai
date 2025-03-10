@@ -1,4 +1,5 @@
 import ignore from 'ignore';
+import { WORK_DIR } from './constants';
 
 // Common patterns to ignore, similar to .gitignore
 export const IGNORE_PATTERNS = [
@@ -108,13 +109,23 @@ export const filesToArtifacts = (files: { [path: string]: { content: string } },
   return `
 <boltArtifact id="${id}" title="User Updated Files">
 ${Object.keys(files)
-  .map(
-    (filePath) => `
-<boltAction type="file" filePath="${filePath}">
+  .map((filePath) => {
+    let cleanedFilePath = filePath;
+
+    if (filePath.startsWith(WORK_DIR)) {
+      cleanedFilePath = filePath.replace(WORK_DIR, '');
+    }
+
+    if (cleanedFilePath.startsWith('/')) {
+      cleanedFilePath = cleanedFilePath.substring(1);
+    }
+
+    return `
+<boltAction type="file" filePath="${cleanedFilePath}">
 ${files[filePath].content}
 </boltAction>
-`,
-  )
+`;
+  })
   .join('\n')}
 </boltArtifact>
   `;
